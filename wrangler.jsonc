@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "grand-power",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    // Self-reference service binding (must match "name") — see https://opennext.js.org/cloudflare/caching
+    { "binding": "WORKER_SELF_REFERENCE", "service": "grand-power" }
+  ],
+  // next/image optimisation via Cloudflare Images — https://opennext.js.org/cloudflare/howtos/image
+  "images": { "binding": "IMAGES" },
+  "observability": { "enabled": true }
+}

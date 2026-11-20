@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Design tokens ───────────────────────────────────────────────────────── */
+:root {
+  --bg: #f8f9fa;
+  --bg-2: #eef0f3;
+  --surface: #ffffff;
+  --surface-2: #f2f3f5;
+  --fg: #0b0b0e;
+  --muted: #5b5e66;
+  --line: rgba(10, 10, 14, 0.1);
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-line: rgba(10, 10, 14, 0.08);
+  --crimson: #c8102e;
+  --crimson-hi: #e3213f;
+  --gold: #a8843c;
+  --gold-hi: #c9a55c;
+  --shadow: 0 20px 50px -24px rgba(10, 10, 14, 0.28);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #08080a;
+  --bg-2: #0d0d10;
+  --surface: #111114;
+  --surface-2: #18181c;
+  --fg: #f4f4f6;
+  --muted: #9b9ba5;
+  --line: rgba(255, 255, 255, 0.08);
+  --glass: rgba(14, 14, 18, 0.62);
+  --glass-line: rgba(255, 255, 255, 0.1);
+  --crimson: #d7192f;
+  --crimson-hi: #ff2e47;
+  --gold: #c9a55c;
+  --gold-hi: #e6c987;
+  --shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.9);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-glass: var(--glass);
+  --color-glass-line: var(--glass-line);
+  --color-crimson: var(--crimson);
+  --color-crimson-hi: var(--crimson-hi);
+  --color-gold: var(--gold);
+  --color-gold-hi: var(--gold-hi);
+  --color-whatsapp: #25d366;
+  --font-sans: var(--font-cairo), system-ui, sans-serif;
+  --font-display: var(--font-michroma), var(--font-cairo), system-ui, sans-serif;
+  --shadow-lux: var(--shadow);
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.35s ease, color 0.35s ease;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--crimson);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Arabic headings: heavy Cairo instead of the Latin display face. */
+[dir="rtl"] .font-display {
+  font-family: var(--font-cairo), system-ui, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+/* ── Utilities ───────────────────────────────────────────────────────────── */
+@utility glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+@utility text-gold-gradient {
+  background: linear-gradient(100deg, var(--gold) 0%, var(--gold-hi) 45%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility metal-line {
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  height: 1px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1.05);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes voltage {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(215, 25, 47, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(215, 25, 47, 0);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-voltage {
+  animation: voltage 1.8s ease-in-out infinite;
+}
+
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

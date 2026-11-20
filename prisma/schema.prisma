@@ -1,0 +1,177 @@
+// GRAND POWER | قراند باور — gpower.store
+// PostgreSQL (Neon).
+// DATABASE_URL → Neon pooled endpoint (…-pooler…), used at runtime via @prisma/adapter-neon.
+// DIRECT_URL   → Neon direct endpoint, used by prisma db push / migrate only.
+
+generator client {
+  provider = "prisma-client-js"
+  // Runtime uses the Neon serverless driver adapter (src/lib/db.ts) → Cloudflare Workers + Node.
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ProductCategory {
+  CARS
+  MOTORS
+  BICYCLES
+  ACCESSORIES
+}
+
+enum Availability {
+  IN_LIBYA
+  IMPORT
+}
+
+enum VehicleCondition {
+  NEW
+  USED
+  CERTIFIED
+}
+
+enum ImportVehicleType {
+  CAR
+  MOTOR
+  BICYCLE
+  ACCESSORY
+}
+
+enum RequestStatus {
+  PENDING
+  REVIEWING
+  QUOTED
+  APPROVED
+  COMPLETED
+  CANCELLED
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  CUSTOMER
+}
+
+model VehicleProduct {
+  id             String           @id @default(cuid())
+  code           String           @unique // Public catalog code used in WhatsApp messages, e.g. GP-M600
+  titleAr        String
+  titleEn        String
+  slug           String           @unique
+  descriptionAr  String           @default("")
+  descriptionEn  String           @default("")
+  price          Int // LYD
+  compareAtPrice Int?
+  category       ProductCategory
+  availability   Availability     @default(IN_LIBYA)
+  engineSpec     String           @default("") // 150cc | 200cc | 300cc | 600cc | Electric | V8 ...
+  powerHp        Int?
+  year           Int?
+  mileage        Int?
+  condition      VehicleCondition @default(NEW)
+  images         String[]
+  specs          Json             @default("{}")
+  isFastDeal     Boolean          @default(false) // الخـت فـت
+  isNew          Boolean          @default(true)
+  isActive       Boolean          @default(true)
+  sortOrder      Int              @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([category, availability, isActive])
+  @@index([isFastDeal, isActive])
+}
+
+model Category {
+  id             String          @id @default(cuid())
+  key            ProductCategory @unique
+  nameAr         String
+  nameEn         String
+  slug           String          @unique
+  taglineAr      String          @default("")
+  taglineEn      String          @default("")
+  image          String
+  carouselImages String[]
+  sortOrder      Int             @default(0)
+  isActive       Boolean         @default(true)
+  updatedAt      DateTime        @updatedAt
+}
+
+model HeroSlide {
+  id         String   @id @default(cuid())
+  titleAr    String
+  titleEn    String
+  subtitleAr String
+  subtitleEn String
+  imageUrl   String
+  ctaTextAr  String   @default("تسوّق الآن")
+  ctaTextEn  String   @default("Shop Now")
+  ctaLink    String   @default("#store")
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  updatedAt  DateTime @updatedAt
+}
+
+model CustomImportRequest {
+  id            String            @id @default(cuid())
+  customerName  String
+  customerPhone String
+  customerCity  String            @default("")
+  vehicleType   ImportVehicleType
+  brandModel    String
+  targetSpec    String            @default("")
+  budgetLyd     Int?
+  budgetUsd     Int?
+  notes         String            @default("")
+  productCode   String? // set when the request originated from a catalog item
+  status        RequestStatus     @default(PENDING)
+  adminNotes    String            @default("")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model ServicePackage {
+  id            String   @id @default(cuid())
+  titleAr       String
+  titleEn       String
+  descriptionAr String   @default("")
+  descriptionEn String   @default("")
+  priceLyd      Int?
+  features      String[]
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+}
+
+model SiteSettings {
+  id             String  @id @default("singleton")
+  brandNameAr    String  @default("قراند باور")
+  brandNameEn    String  @default("GRAND POWER")
+  sloganAr       String  @default("اختر الأفضل، اختر GRAND POWER")
+  sloganEn       String  @default("Choose the Best, Choose GRAND POWER")
+  aboutTextAr    String  @default("")
+  aboutTextEn    String  @default("")
+  whatsappNumber String  @default("218915229703")
+  phoneNumber    String  @default("+218915229703")
+  email          String  @default("info@gpower.store")
+  addressAr      String  @default("طرابلس، ليبيا")
+  addressEn      String  @default("Tripoli, Libya")
+  facebookUrl    String  @default("https://m.facebook.com/groups/149394612485159/")
+  instagramUrl   String  @default("https://www.instagram.com/gpower_ly")
+  promoBannerAr  String  @default("")
+  promoBannerEn  String  @default("")
+  isPromoActive  Boolean @default(false)
+  updatedAt      DateTime @updatedAt
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String   @default("")
+  passwordHash String // scrypt: salt:hash (hex)
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now())
+}
