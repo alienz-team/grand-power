@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Cairo, Michroma } from "next/font/google";
 import { cookies } from "next/headers";
 import { PreferencesProvider } from "@/components/providers/PreferencesProvider";
 import { LOGO_URL, SITE_URL } from "@/lib/config/contact";
@@ -7,8 +6,11 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import { LANG_COOKIE, THEME_COOKIE, parseLang, parseTheme } from "@/lib/prefs";
 import "./globals.css";
 
-const cairo = Cairo({ subsets: ["arabic", "latin"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-cairo", display: "swap" });
-const michroma = Michroma({ subsets: ["latin"], weight: "400", variable: "--font-michroma", display: "swap" });
+// Google Fonts via plain <link> tags (not next/font) so `next build` never fetches fonts at build time —
+// next/font's build-time loader fails inside Cloudflare Workers Builds. Families map to --font-cairo /
+// --font-michroma in globals.css; CSP already allows fonts.googleapis.com + fonts.gstatic.com.
+const GOOGLE_FONTS_HREF =
+  "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Michroma&display=swap";
 
 export async function generateMetadata(): Promise<Metadata> {
   const lang = parseLang((await cookies()).get(LANG_COOKIE)?.value);
@@ -52,10 +54,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang={lang}
       dir={lang === "ar" ? "rtl" : "ltr"}
-      className={`${cairo.variable} ${michroma.variable} ${theme === "dark" ? "dark" : ""}`}
+      className={theme === "dark" ? "dark" : undefined}
       style={{ colorScheme: theme }}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href={GOOGLE_FONTS_HREF} />
+      </head>
       <body className="min-h-dvh bg-bg text-fg">
         <PreferencesProvider initialLang={lang} initialTheme={theme}>
           {children}

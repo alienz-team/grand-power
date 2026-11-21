@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Font families (loaded by <link> in app/layout.tsx). */
+:root {
+  --font-cairo: "Cairo";
+  --font-michroma: "Michroma";
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ── Design tokens ───────────────────────────────────────────────────────── */
