@@ -40,7 +40,10 @@ const nextConfig: NextConfig = {
   // Prisma must stay external so OpenNext/workerd resolves its wasm query engine for Cloudflare.
   serverExternalPackages: ["@prisma/client", ".prisma/client"],
   images: {
-    formats: ["image/avif", "image/webp"],
+    // Custom loader: Unsplash resizes on its CDN; no runtime optimiser needed on Cloudflare Workers.
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
+    // Kept in sync with isAllowedImageUrl (src/lib/images.ts) and the CSP img-src below.
     remotePatterns: [
       { protocol: "https", hostname: "images.cdn-files-a.com" },
       { protocol: "https", hostname: "images.unsplash.com" },

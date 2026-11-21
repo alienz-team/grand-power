@@ -12,7 +12,5 @@
     // Self-reference service binding (must match "name") — see https://opennext.js.org/cloudflare/caching
     { "binding": "WORKER_SELF_REFERENCE", "service": "grand-power" }
   ],
-  // next/image optimisation via Cloudflare Images — https://opennext.js.org/cloudflare/howtos/image
-  "images": { "binding": "IMAGES" },
   "observability": { "enabled": true }
 }

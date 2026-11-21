@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Calendar, Eye, Gauge, Zap } from "lucide-react";
+import { BadgeCheck, Calendar, Eye, Gauge, Route, Zap } from "lucide-react";
 import { usePrefs } from "@/components/providers/PreferencesProvider";
 import { WhatsAppIcon } from "@/components/ui/BrandIcons";
 import { AvailabilityPill, DealBadge } from "@/components/ui/Pills";
-import { formatPrice, productWhatsappLink } from "@/lib/format";
+import { formatNumber, formatPrice, productWhatsappLink } from "@/lib/format";
 import type { Product } from "@/lib/types";
+import { SaveButton } from "./SaveButton";
 import { useStore } from "./store-context";
 
 export function ProductCard({ product: p, index = 0 }: { product: Product; index?: number }) {
@@ -44,7 +45,10 @@ export function ProductCard({ product: p, index = 0 }: { product: Product; index
         )}
         <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
           <DealBadge fast={p.isFastDeal} isNew={p.isNew} />
-          <AvailabilityPill value={p.availability} />
+          <div className="flex items-center gap-2">
+            <AvailabilityPill value={p.availability} />
+            <SaveButton code={p.code} />
+          </div>
         </div>
         <button
           onClick={() => openQuickView(p)}
@@ -82,7 +86,19 @@ export function ProductCard({ product: p, index = 0 }: { product: Product; index
               {p.year}
             </span>
           ) : null}
+          {p.condition !== "NEW" && p.mileage ? (
+            <span className="inline-flex items-center gap-1">
+              <Route size={13} />
+              {formatNumber(p.mileage, lang)} {lang === "ar" ? "كم" : "km"}
+            </span>
+          ) : null}
         </div>
+        {p.condition !== "NEW" && (
+          <p className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-sky-500/10 px-2 py-0.5 text-[11px] font-bold text-sky-500">
+            <BadgeCheck size={12} />
+            {t.conditions[p.condition]}
+          </p>
+        )}
 
         <div className="mt-auto pt-4">
           <div className="flex items-end justify-between gap-2">

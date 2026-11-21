@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  CalendarCheck,
   ExternalLink,
   FolderKanban,
   Inbox,
@@ -30,10 +31,21 @@ const NAV = [
   { href: "/admin/categories", icon: FolderKanban, ar: "الأقسام والمعارض", en: "Categories & Galleries" },
   { href: "/admin/content", icon: MonitorPlay, ar: "محتوى الواجهة والهيرو", en: "Storefront & Hero CMS" },
   { href: "/admin/orders", icon: Inbox, ar: "طلبات الاستيراد والحجوزات", en: "Import Requests & Orders" },
+  { href: "/admin/bookings", icon: CalendarCheck, ar: "حجوزات الخدمات", en: "Service Bookings" },
   { href: "/admin/settings", icon: Settings, ar: "إعدادات الموقع والتواصل", en: "Site & Contact Settings" },
 ];
 
-export function AdminShell({ email, pending, children }: { email: string; pending: number; children: ReactNode }) {
+export function AdminShell({
+  email,
+  pending,
+  pendingBookings = 0,
+  children,
+}: {
+  email: string;
+  pending: number;
+  pendingBookings?: number;
+  children: ReactNode;
+}) {
   const tx = useTx();
   const { theme, toggleTheme, toggleLang, lang, dir } = usePrefs();
   const pathname = usePathname();
@@ -56,9 +68,12 @@ export function AdminShell({ email, pending, children }: { email: string; pendin
             <span className={`font-mono text-[10px] ${active ? "text-white/70" : "text-muted"}`}>{String(i + 1).padStart(2, "0")}</span>
             <n.icon size={18} />
             <span className="flex-1">{tx(n.ar, n.en)}</span>
-            {n.href === "/admin/orders" && pending > 0 && (
-              <span className={`rounded-full px-2 text-[11px] ${active ? "bg-white text-crimson" : "bg-crimson text-white"}`}>{pending}</span>
-            )}
+            {(() => {
+              const badge = n.href === "/admin/orders" ? pending : n.href === "/admin/bookings" ? pendingBookings : 0;
+              return badge > 0 ? (
+                <span className={`rounded-full px-2 text-[11px] ${active ? "bg-white text-crimson" : "bg-crimson text-white"}`}>{badge}</span>
+              ) : null;
+            })()}
           </Link>
         );
       })}

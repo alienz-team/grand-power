@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { Availability, CategoryKey, Product, SiteSettings } from "@/lib/types";
+import type { ServiceType } from "@/lib/services";
+import type { Availability, CategoryKey, CustomerProfile, Product, SiteSettings } from "@/lib/types";
 
 export const ENGINE_FILTERS = ["150cc", "200cc", "300cc", "600cc", "Electric", "V8/SUV"] as const;
 export type EngineFilter = (typeof ENGINE_FILTERS)[number];
@@ -51,6 +52,15 @@ interface StoreCtx {
   resetFilters: () => void;
   openQuickView: (p: Product) => void;
   goToCatalog: (patch?: Partial<Filters>) => void;
+  /** Signed-in storefront customer, or null. */
+  customer: CustomerProfile | null;
+  /** Product codes the customer has saved. */
+  saved: ReadonlySet<string>;
+  toggleSave: (code: string) => void;
+  /** Currently selected service in the booking form. */
+  booking: { type: ServiceType; option: string };
+  /** Pre-selects a service (and optionally an option) and scrolls to the booking form. */
+  bookService: (type: ServiceType, option?: string) => void;
 }
 
 export const StoreContext = createContext<StoreCtx | null>(null);

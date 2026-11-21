@@ -17,7 +17,14 @@ import {
 } from "@/lib/auth";
 import { getPrisma } from "@/lib/db";
 import { isStorageConfigured, uploadProductImages } from "@/lib/storage";
-import { SEED_CATEGORIES, SEED_PRODUCTS, SEED_SETTINGS, SEED_SLIDES } from "@/lib/data/seed-data";
+import {
+  IMAGE_MIGRATIONS,
+  RETIRED_PRODUCT_CODES,
+  SEED_CATEGORIES,
+  SEED_PRODUCTS,
+  SEED_SETTINGS,
+  SEED_SLIDES,
+} from "@/lib/data/seed-data";
 import { isAllowedImageUrl } from "@/lib/images";
 import { DEFAULT_ADMIN_EMAIL } from "@/lib/auth-token";
 import { AVAILABILITIES, CATEGORY_KEYS, CONDITIONS, REQUEST_STATUSES, type ActionResult } from "@/lib/types";
@@ -337,6 +344,41 @@ export async function deleteRequest(id: string): Promise<ActionResult> {
   }
 }
 
+// ── Service bookings (mobile workshop · car wash · car editing) ─────────────
+
+export async function updateBooking(id: string, status: string, adminNotes?: string): Promise<ActionResult> {
+  await assertAdmin();
+  const prisma = getPrisma();
+  if (!prisma) return NO_DB;
+  try {
+    await prisma.serviceBooking.update({
+      where: { id: z.string().min(1).max(40).parse(id) },
+      data: { status: z.enum(REQUEST_STATUSES).parse(status), ...(adminNotes !== undefined ? { adminNotes: adminNotes.slice(0, 2000) } : {}) },
+    });
+    revalidatePath("/admin/bookings");
+    revalidatePath("/admin");
+    revalidatePath("/account");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function deleteBooking(id: string): Promise<ActionResult> {
+  await assertAdmin();
+  const prisma = getPrisma();
+  if (!prisma) return NO_DB;
+  try {
+    await prisma.serviceBooking.delete({ where: { id: z.string().min(1).max(40).parse(id) } });
+    revalidatePath("/admin/bookings");
+    revalidatePath("/admin");
+    revalidatePath("/account");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
 // ── One-click database seeding ──────────────────────────────────────────────
 
 export async function seedDatabaseAction(): Promise<ActionResult> {
@@ -374,5 +416,11 @@ async function seedDatabase(prisma: NonNullable<ReturnType<typeof getPrisma>>) {
           }),
         ]
       : []),
+    prisma.vehicleProduct.updateMany({ where: { code: { in: RETIRED_PRODUCT_CODES } }, data: { isActive: false } }),
+    prisma.category.updateMany({
+      where: { key: IMAGE_MIGRATIONS.category.key, image: IMAGE_MIGRATIONS.category.fromImage },
+      data: IMAGE_MIGRATIONS.category.data,
+    }),
+    ...IMAGE_MIGRATIONS.slides.map((m) => prisma.heroSlide.updateMany({ where: { id: m.id, imageUrl: m.fromImage }, data: m.data })),
   ]);
 }

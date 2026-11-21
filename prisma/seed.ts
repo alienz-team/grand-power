@@ -2,7 +2,14 @@
 // Idempotent — existing rows are left untouched (upsert with empty update).
 import { randomBytes, scryptSync } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
-import { SEED_CATEGORIES, SEED_PRODUCTS, SEED_SETTINGS, SEED_SLIDES } from "../src/lib/data/seed-data";
+import {
+  IMAGE_MIGRATIONS,
+  RETIRED_PRODUCT_CODES,
+  SEED_CATEGORIES,
+  SEED_PRODUCTS,
+  SEED_SETTINGS,
+  SEED_SLIDES,
+} from "../src/lib/data/seed-data";
 
 const prisma = new PrismaClient();
 
@@ -26,6 +33,13 @@ async function main() {
       create: { email, name: "GRAND POWER Admin", role: "ADMIN", passwordHash: hashPassword(password) },
       update: {},
     }),
+    // Catalog migrations — only touch rows still holding the previous defaults (CMS edits are preserved).
+    prisma.vehicleProduct.updateMany({ where: { code: { in: RETIRED_PRODUCT_CODES } }, data: { isActive: false } }),
+    prisma.category.updateMany({
+      where: { key: IMAGE_MIGRATIONS.category.key, image: IMAGE_MIGRATIONS.category.fromImage },
+      data: IMAGE_MIGRATIONS.category.data,
+    }),
+    ...IMAGE_MIGRATIONS.slides.map((m) => prisma.heroSlide.updateMany({ where: { id: m.id, imageUrl: m.fromImage }, data: m.data })),
   ]);
   if ((await prisma.servicePackage.count()) === 0) {
     await prisma.servicePackage.createMany({

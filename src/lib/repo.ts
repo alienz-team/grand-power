@@ -8,12 +8,14 @@ import type {
   VehicleProduct as DbProduct,
 } from "@prisma/client";
 import { getPrisma } from "@/lib/db";
+import { mapBooking } from "@/lib/customer";
 import { SEED_CATEGORIES, SEED_PRODUCTS, SEED_SETTINGS, SEED_SLIDES } from "@/lib/data/seed-data";
 import type {
   CategoryInfo,
   HeroSlide,
   ImportRequest,
   Product,
+  ServiceBooking,
   ProductSpecs,
   SiteSettings,
   StorefrontData,
@@ -262,5 +264,16 @@ export async function getImportRequests(): Promise<{ requests: ImportRequest[]; 
     return { requests: rows.map(mapRequest), source: "database" };
   } catch {
     return { requests: [], source: "seed" };
+  }
+}
+
+export async function getServiceBookings(): Promise<{ bookings: ServiceBooking[]; source: "database" | "seed" }> {
+  const prisma = getPrisma();
+  if (!prisma) return { bookings: [], source: "seed" };
+  try {
+    const rows = await prisma.serviceBooking.findMany({ orderBy: { createdAt: "desc" }, take: 300 });
+    return { bookings: rows.map(mapBooking), source: "database" };
+  } catch {
+    return { bookings: [], source: "seed" };
   }
 }

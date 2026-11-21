@@ -48,6 +48,12 @@ enum RequestStatus {
   CANCELLED
 }
 
+enum ServiceType {
+  MOBILE_WORKSHOP // ورش متنقلة وصيانة
+  CAR_WASH // غسيل متنقل
+  CAR_EDITING // تعديل السيارات
+}
+
 enum Role {
   ADMIN
   EDITOR
@@ -128,10 +134,49 @@ model CustomImportRequest {
   productCode   String? // set when the request originated from a catalog item
   status        RequestStatus     @default(PENDING)
   adminNotes    String            @default("")
+  userId        String? // set when submitted by a signed-in customer
+  user          User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
   @@index([status, createdAt])
+  @@index([userId])
+}
+
+/// On-site service bookings: mobile workshop, mobile car wash, car editing.
+model ServiceBooking {
+  id            String        @id @default(cuid())
+  serviceType   ServiceType
+  serviceOption String // e.g. OIL_FILTER, DIAGNOSTICS, FULL_WASH, TUNING (see src/lib/services.ts)
+  customerName  String
+  customerPhone String
+  customerCity  String        @default("")
+  address       String        @default("") // area / street / landmark for on-site visits
+  vehicle       String        @default("") // make, model, year
+  preferredDate DateTime?
+  preferredTime String        @default("") // MORNING | AFTERNOON | EVENING
+  notes         String        @default("")
+  status        RequestStatus @default(PENDING)
+  adminNotes    String        @default("")
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([serviceType, status])
+  @@index([userId])
+}
+
+/// A customer's saved / favourite catalog vehicle (by public product code, so it survives catalog edits).
+model SavedVehicle {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productCode String
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, productCode])
 }
 
 model ServicePackage {
@@ -147,31 +192,37 @@ model ServicePackage {
 }
 
 model SiteSettings {
-  id             String  @id @default("singleton")
-  brandNameAr    String  @default("قراند باور")
-  brandNameEn    String  @default("GRAND POWER")
-  sloganAr       String  @default("اختر الأفضل، اختر GRAND POWER")
-  sloganEn       String  @default("Choose the Best, Choose GRAND POWER")
-  aboutTextAr    String  @default("")
-  aboutTextEn    String  @default("")
-  whatsappNumber String  @default("218915229703")
-  phoneNumber    String  @default("+218915229703")
-  email          String  @default("info@gpower.store")
-  addressAr      String  @default("طرابلس، ليبيا")
-  addressEn      String  @default("Tripoli, Libya")
-  facebookUrl    String  @default("https://m.facebook.com/groups/149394612485159/")
-  instagramUrl   String  @default("https://www.instagram.com/gpower_ly")
-  promoBannerAr  String  @default("")
-  promoBannerEn  String  @default("")
-  isPromoActive  Boolean @default(false)
+  id             String   @id @default("singleton")
+  brandNameAr    String   @default("قراند باور")
+  brandNameEn    String   @default("GRAND POWER")
+  sloganAr       String   @default("اختر الأفضل، اختر GRAND POWER")
+  sloganEn       String   @default("Choose the Best, Choose GRAND POWER")
+  aboutTextAr    String   @default("")
+  aboutTextEn    String   @default("")
+  whatsappNumber String   @default("218915229703")
+  phoneNumber    String   @default("+218915229703")
+  email          String   @default("info@gpower.store")
+  addressAr      String   @default("طرابلس، ليبيا")
+  addressEn      String   @default("Tripoli, Libya")
+  facebookUrl    String   @default("https://m.facebook.com/groups/149394612485159/")
+  instagramUrl   String   @default("https://www.instagram.com/gpower_ly")
+  promoBannerAr  String   @default("")
+  promoBannerEn  String   @default("")
+  isPromoActive  Boolean  @default(false)
   updatedAt      DateTime @updatedAt
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String   @default("")
-  passwordHash String // scrypt: salt:hash (hex)
-  role         Role     @default(CUSTOMER)
-  createdAt    DateTime @default(now())
+  id             String                @id @default(cuid())
+  email          String                @unique
+  name           String                @default("")
+  phone          String                @default("")
+  city           String                @default("")
+  passwordHash   String // scrypt: salt:hash (hex)
+  role           Role                  @default(CUSTOMER)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @default(now()) @updatedAt
+  bookings       ServiceBooking[]
+  savedVehicles  SavedVehicle[]
+  importRequests CustomImportRequest[]
 }

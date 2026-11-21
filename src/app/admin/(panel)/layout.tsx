@@ -9,16 +9,20 @@ export const dynamic = "force-dynamic";
 export default async function AdminPanelLayout({ children }: { children: React.ReactNode }) {
   const session = await assertAdmin();
   let pending = 0;
+  let pendingBookings = 0;
   const prisma = getPrisma();
   if (prisma) {
     try {
-      pending = await prisma.customImportRequest.count({ where: { status: "PENDING" } });
+      [pending, pendingBookings] = await prisma.$transaction([
+        prisma.customImportRequest.count({ where: { status: "PENDING" } }),
+        prisma.serviceBooking.count({ where: { status: "PENDING" } }),
+      ]);
     } catch {
       /* DB unreachable — badge just hides */
     }
   }
   return (
-    <AdminShell email={session.sub} pending={pending}>
+    <AdminShell email={session.sub} pending={pending} pendingBookings={pendingBookings}>
       {children}
     </AdminShell>
   );

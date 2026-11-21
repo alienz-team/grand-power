@@ -110,6 +110,33 @@ export interface SiteSettings {
   isPromoActive: boolean;
 }
 
+export interface ServiceBooking {
+  id: string;
+  serviceType: "MOBILE_WORKSHOP" | "CAR_WASH" | "CAR_EDITING";
+  serviceOption: string;
+  customerName: string;
+  customerPhone: string;
+  customerCity: string;
+  address: string;
+  vehicle: string;
+  preferredDate: string | null; // YYYY-MM-DD
+  preferredTime: string;
+  notes: string;
+  status: RequestStatus;
+  adminNotes: string;
+  hasAccount: boolean;
+  createdAt: string; // ISO
+}
+
+/** Signed-in storefront customer (never includes the password hash). */
+export interface CustomerProfile {
+  id: string;
+  email: string;
+  name: string;
+  phone: string;
+  city: string;
+}
+
 export interface StorefrontData {
   settings: SiteSettings;
   slides: HeroSlide[];

@@ -18,7 +18,7 @@ export function hashPassword(password: string): string {
   return `${salt}:${hash}`;
 }
 
-function verifyHash(password: string, stored: string): boolean {
+export function verifyHash(password: string, stored: string): boolean {
   const [salt, hash] = stored.split(":");
   if (!salt || !hash) return false;
   const expected = Buffer.from(hash, "hex");

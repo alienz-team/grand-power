@@ -55,3 +55,42 @@ export async function verifySession(token: string | undefined): Promise<SessionP
     return null;
   }
 }
+
+// ── Storefront customer sessions ────────────────────────────────────────────
+// Separate cookie + audience + role, so a customer token can never satisfy the admin check above
+// (verifySession requires role === "ADMIN"), and an admin token is never accepted as a customer one.
+export const CUSTOMER_COOKIE = "gp_customer";
+export const CUSTOMER_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const CUSTOMER_AUDIENCE = "customer";
+
+export interface CustomerSessionPayload {
+  sub: string; // user id
+  email: string;
+  role: "CUSTOMER";
+}
+
+export async function signCustomerSession(userId: string, email: string): Promise<string> {
+  return new SignJWT({ role: "CUSTOMER", email })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(userId)
+    .setAudience(CUSTOMER_AUDIENCE)
+    .setIssuedAt()
+    .setIssuer("gpower.store")
+    .setExpirationTime(`${CUSTOMER_TTL_SECONDS}s`)
+    .sign(secretKey());
+}
+
+export async function verifyCustomerSession(token: string | undefined): Promise<CustomerSessionPayload | null> {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secretKey(), {
+      issuer: "gpower.store",
+      audience: CUSTOMER_AUDIENCE,
+      algorithms: ["HS256"],
+    });
+    if (payload.role !== "CUSTOMER" || typeof payload.sub !== "string" || typeof payload.email !== "string") return null;
+    return { sub: payload.sub, email: payload.email, role: "CUSTOMER" };
+  } catch {
+    return null;
+  }
+}

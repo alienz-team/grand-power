@@ -74,6 +74,36 @@ export const IMG = {
   mtbStreet: u("1529422643029-d4585747aaf2"),
   bikepacking: u("1511994298241-608e28f14fde"),
 
+  // Libyan-market showroom & used vehicles (vetted 2026-11: no people)
+  landCruiser200: u("1491422433900-4e19887b7b21"),
+  landCruiser70: u("1500381369072-1e8259ca5ed4"),
+  pradoRear: u("1692985973827-62dfc31ef012"),
+  patrolY62: u("1650453598094-1a430cdd8f80"),
+  camryGrey: u("1621007947382-bb3c3994e3fb"),
+  yarisSedanRear: u("1749058983952-c7ce95258535"),
+  yarisSedanFront: u("1749058983469-11eaef8d7bc5"),
+  corollaWhite: u("1623869675781-80aa31012a5a"),
+  tucsonShowroom: u("1706082072635-d19df8f0f3fb"),
+  tucsonBlack: u("1575090536203-2a6193126514"),
+  sportageRear: u("1654689289571-07f69459ae35"),
+  hiluxSilver: u("1631377875413-b1e3e660bfa2"),
+  hiluxClassic: u("1768467485572-ea7e8ebe921e"),
+  tacomaTan: u("1559416523-140ddc3d238c"),
+  tacomaBlack: u("1641333326784-24a9c21d3c4e"),
+  usedCarLot: u("1772440223098-cc23f6f01209"),
+
+  // Services: mobile workshop · car wash · car editing (no people, no hands)
+  engineBayClean: u("1725289339928-06ee31684df5"),
+  engineBayV8: u("1723908920564-55f3b9507f6c"),
+  toolsWrenches: u("1637640125496-31852f042a60"),
+  toolboxWorkshop: u("1640682841767-cdfce3aea6e0"),
+  dashDiagnostics: u("1758411898007-6a17c74ef528"),
+  washFoamGrey: u("1781890424630-ea9e1f931f08"),
+  washFoamBlack: u("1781890358868-a21b8b87acde"),
+  washFoamWheel: u("1781890315497-922d5b84fefa"),
+  washFoamFront: u("1781890290050-4138ef5afc97"),
+  tunedWidebody: u("1750712348122-e0c0998e3ff2"),
+
   // Accessories / parts
   engineBelts: u("1486262715619-67b85e0b08d3"),
   motoWheelBrake: u("1558980394-4c7c9299fe96"),

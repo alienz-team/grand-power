@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getCustomer } from "@/lib/customer";
 import { getPrisma } from "@/lib/db";
 import { IMPORT_TYPES } from "@/lib/types";
 
@@ -55,6 +56,7 @@ export async function submitImportRequest(input: ImportRequestInput): Promise<Im
   // No DB yet → client falls back to WhatsApp hand-off; still a success from the customer's view.
   if (!prisma) return { ok: true, saved: false };
 
+  const me = await getCustomer();
   try {
     await prisma.customImportRequest.create({
       data: {
@@ -68,10 +70,12 @@ export async function submitImportRequest(input: ImportRequestInput): Promise<Im
         budgetUsd: d.currency === "USD" ? (d.budget ?? null) : null,
         notes: d.notes,
         productCode: d.productCode || null,
+        userId: me?.id ?? null,
       },
     });
     revalidatePath("/admin");
     revalidatePath("/admin/orders");
+    if (me) revalidatePath("/account");
     return { ok: true, saved: true };
   } catch (err) {
     console.error("[import-request] insert failed:", (err as Error).message);

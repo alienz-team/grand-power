@@ -10,6 +10,7 @@ import { AvailabilityPill, DealBadge } from "@/components/ui/Pills";
 import { telLink } from "@/lib/config/contact";
 import { formatNumber, formatPrice, productWhatsappLink } from "@/lib/format";
 import type { Product } from "@/lib/types";
+import { SaveButton } from "./SaveButton";
 import { useStore } from "./store-context";
 
 export function QuickViewModal({ product, onClose }: { product: Product | null; onClose: () => void }) {
@@ -160,6 +161,7 @@ function ModalBody({ p, onClose }: { p: Product; onClose: () => void }) {
               <WhatsAppIcon size={18} />
               {t.modal.book}
             </a>
+            <SaveButton code={p.code} variant="inline" />
             <div className="grid grid-cols-2 gap-2">
               <a href={telLink(settings.phoneNumber)} className="inline-flex items-center justify-center gap-2 rounded-full border border-line py-3 text-sm font-bold hover:border-gold">
                 <Phone size={16} />

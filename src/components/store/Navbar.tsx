@@ -3,16 +3,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Languages, Menu, Moon, Phone, Sun, X } from "lucide-react";
+import { Languages, Menu, Moon, Phone, Sun, UserRound, X } from "lucide-react";
 import { usePrefs } from "@/components/providers/PreferencesProvider";
 import { Logo } from "@/components/ui/Logo";
 import { WhatsAppIcon } from "@/components/ui/BrandIcons";
 import { telLink, waLink } from "@/lib/config/contact";
+import { featureDictionaries } from "@/lib/i18n/features";
 import { useStore } from "./store-context";
 
 export function Navbar() {
   const { t, lang, theme, toggleLang, toggleTheme } = usePrefs();
-  const { settings } = useStore();
+  const { settings, customer } = useStore();
+  const fx = featureDictionaries[lang].nav;
+  const accountHref = customer ? "/account" : "/account/login";
+  const accountLabel = customer ? fx.account : fx.login;
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -32,9 +36,9 @@ export function Navbar() {
 
   const links = [
     { href: "#store", label: t.nav.store },
+    { href: "#showroom", label: fx.showroom },
     { href: "#deals", label: t.nav.deals },
-    { href: "#catalog", label: t.catalog.kicker },
-    { href: "#process", label: t.nav.process },
+    { href: "#services", label: fx.services },
     { href: "#import", label: t.nav.import },
     { href: "#about", label: t.nav.about },
   ];
@@ -78,6 +82,14 @@ export function Navbar() {
           <button onClick={toggleTheme} className={iconBtn} aria-label={theme === "dark" ? t.toggles.light : t.toggles.dark}>
             {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
           </button>
+          <Link
+            href={accountHref}
+            className="inline-flex h-10 items-center gap-1.5 rounded-full border border-line px-3 text-xs font-bold text-fg/90 transition hover:border-gold hover:text-gold"
+            aria-label={accountLabel}
+          >
+            <UserRound size={16} />
+            <span className="hidden max-w-[9rem] truncate sm:inline">{customer ? customer.name.split(" ")[0] || fx.account : fx.login}</span>
+          </Link>
           <a href={telLink(settings.phoneNumber)} className={`${iconBtn} hidden md:grid`} aria-label={t.dock.call}>
             <Phone size={17} />
           </a>
@@ -120,6 +132,12 @@ export function Navbar() {
                   </a>
                 </motion.li>
               ))}
+              <motion.li initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 * links.length }}>
+                <Link href={accountHref} onClick={() => setOpen(false)} className="flex items-center gap-3 border-b border-line py-4 font-display text-2xl text-gold">
+                  <UserRound size={22} />
+                  {customer ? fx.account : `${fx.login} / ${fx.register}`}
+                </Link>
+              </motion.li>
             </ul>
           </motion.div>
         )}
